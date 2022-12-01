@@ -30,6 +30,8 @@ public class CurriculumVitae extends Auditor {
     private String cvId;
     @Field(name = "cv_name")
     private String cvName;
+    @Field(name = "description")
+    private String description;
     @Field(name = "cv_key")
     private String cvKey;
 }

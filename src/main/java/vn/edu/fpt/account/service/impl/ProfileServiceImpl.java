@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import vn.edu.fpt.account.constant.ResponseStatusEnum;
 import vn.edu.fpt.account.dto.common.PageableResponse;
@@ -173,6 +174,17 @@ public class ProfileServiceImpl implements ProfileService {
 
         profile.setAvatar(s3BucketStorageService.uploadFile(request.getAvatar()));
         log.info("Change avatar success");
+
+        try {
+            profile = profileRepository.save(profile);
+        }catch (Exception ex){
+            throw new BusinessException("Can't update avatar in profile");
+        }
+        addAvatarToUserInfo(profileId, profile.getAvatar());
+    }
+
+    private void addAvatarToUserInfo(String profileId, String avatar){
+
     }
 
     private GetCVOfAccountResponse convertCVToGetCVOfAccountResponse(CurriculumVitae curriculumVitae) {

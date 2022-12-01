@@ -32,8 +32,8 @@ public class CurriculumVitaeControllerImpl implements CurriculumVitaeController 
     private final CVService cvService;
 
     @Override
-    public ResponseEntity<GeneralResponse<CreateCVResponse>> createCV(CreateCVRequest request) {
-        return responseFactory.response(cvService.createCV(request));
+    public ResponseEntity<GeneralResponse<CreateCVResponse>> createCV(String profileId, CreateCVRequest request) {
+        return responseFactory.response(cvService.createCV(profileId, request));
     }
 
     @Override

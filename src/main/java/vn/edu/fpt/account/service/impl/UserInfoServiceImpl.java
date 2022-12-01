@@ -5,7 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import vn.edu.fpt.account.entity.common.UserInfo;
+import vn.edu.fpt.account.dto.cache.UserInfo;
+import vn.edu.fpt.account.exception.BusinessException;
 import vn.edu.fpt.account.service.UserInfoService;
 
 /**
@@ -31,6 +32,26 @@ public class UserInfoServiceImpl implements UserInfoService {
         }catch (Exception ex){
             log.error("Can't get userinfo in redis: {}", ex.getMessage());
             return null;
+        }
+    }
+
+    @Override
+    public void addAvatarToUserInfo(String accountId, String avatarURL) {
+        try {
+            String userInfoStr = redisTemplate.opsForValue().get(String.format("userinfo:%s", accountId));
+            UserInfo userInfo = objectMapper.readValue(userInfoStr, UserInfo.class);
+            userInfo.setAvatar(avatarURL);
+            pushUserInfoToRedis(accountId, userInfo);
+        }catch (Exception ex){
+            throw new BusinessException("Can't avatar to userinfo: "+ ex.getMessage());
+        }
+    }
+
+    private void pushUserInfoToRedis(String accountId, UserInfo userInfo){
+        try {
+            redisTemplate.opsForValue().set(String.format("userinfo:%s", accountId),objectMapper.writeValueAsString(userInfo));
+        }catch (Exception ex){
+            throw new BusinessException("Can't push userinfo to redis: "+ ex.getMessage());
         }
     }
 }

@@ -2,6 +2,7 @@ package vn.edu.fpt.account.dto.response.profile;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import vn.edu.fpt.account.dto.common.AuditableResponse;
 
 /**
  * @author : Hoang Lam

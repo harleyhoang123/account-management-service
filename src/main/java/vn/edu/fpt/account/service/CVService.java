@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
  **/
 public interface CVService {
 
-    CreateCVResponse createCV(CreateCVRequest request);
+    CreateCVResponse createCV(String profileId, CreateCVRequest request);
 
     GetCVDetailResponse getCVDetailById(String cvId);
 

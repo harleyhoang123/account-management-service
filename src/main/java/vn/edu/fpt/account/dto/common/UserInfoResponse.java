@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import vn.edu.fpt.account.entity.common.UserInfo;
+import vn.edu.fpt.account.dto.cache.UserInfo;
 
 import java.io.Serializable;
 

@@ -1,6 +1,6 @@
 package vn.edu.fpt.account.service;
 
-import vn.edu.fpt.account.entity.common.UserInfo;
+import vn.edu.fpt.account.dto.cache.UserInfo;
 
 /**
  * @author : Hoang Lam
@@ -12,5 +12,7 @@ import vn.edu.fpt.account.entity.common.UserInfo;
 public interface UserInfoService {
 
     UserInfo getUserInfo(String accountId);
+
+    void addAvatarToUserInfo(String accountId, String avatarURL);
 
 }
