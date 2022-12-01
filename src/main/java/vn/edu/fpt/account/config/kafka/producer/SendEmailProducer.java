@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import vn.edu.fpt.notification.dto.event.SendEmailEvent;
+import vn.edu.fpt.account.dto.event.SendEmailEvent;
 
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ import java.util.UUID;
 @Slf4j
 public class SendEmailProducer extends Producer{
 
-    private static final String TOPIC = "flab.send_email";
+    private static final String TOPIC = "flab.notification.send_email";
     private ObjectMapper objectMapper;
 
     @Autowired
