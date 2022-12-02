@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("${app.application-context}/public/api/v1/cv")
 public interface CurriculumVitaeController {
 
-    @PostMapping(value = "{/profile-id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/{profile-id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     ResponseEntity<GeneralResponse<CreateCVResponse>> createCV(@PathVariable(name = "profile-id") String profileId, @ModelAttribute CreateCVRequest request);
 
     @PutMapping(value = "/{cv-id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})

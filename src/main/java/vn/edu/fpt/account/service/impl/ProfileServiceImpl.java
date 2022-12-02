@@ -148,7 +148,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public PageableResponse<GetCVOfAccountResponse> getCVOfAccount(String accountId) {
-        if(!ObjectId.isValid(accountId)){
+        if (!ObjectId.isValid(accountId)) {
             throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Account ID not exist");
         }
         Profile profile = profileRepository.findById(accountId)
@@ -162,13 +162,13 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public void changeAvatar(String profileId, ChangeAvatarRequest request) {
-        if(!ObjectId.isValid(profileId)){
+        if (!ObjectId.isValid(profileId)) {
             throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID invalid");
         }
         Profile profile = profileRepository.findById(profileId)
                 .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID not exist"));
 
-        if(request.getAvatar() == null){
+        if (request.getAvatar() == null) {
             throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Avatar invalid");
         }
 
@@ -177,15 +177,12 @@ public class ProfileServiceImpl implements ProfileService {
 
         try {
             profile = profileRepository.save(profile);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             throw new BusinessException("Can't update avatar in profile");
         }
-        addAvatarToUserInfo(profileId, profile.getAvatar());
+        userInfoService.addAvatarToUserInfo(profileId, profile.getAvatar());
     }
 
-    private void addAvatarToUserInfo(String profileId, String avatar){
-
-    }
 
     private GetCVOfAccountResponse convertCVToGetCVOfAccountResponse(CurriculumVitae curriculumVitae) {
         return GetCVOfAccountResponse.builder()
