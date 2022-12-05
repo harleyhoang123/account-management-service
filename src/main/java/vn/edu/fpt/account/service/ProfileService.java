@@ -15,14 +15,14 @@ import vn.edu.fpt.account.dto.response.profile.GetProfileDetailResponse;
  * @contact : 0834481768 - hoang.harley.work@gmail.com
  **/
 public interface ProfileService {
-    
+
     void createProfile(CreateProfileRequest request);
-    
+
     void updateProfile(String profileId, UpdateProfileRequest request);
-    
+
     GetProfileDetailResponse getProfileDetails(String profileId);
-    
+
     PageableResponse<GetCVOfAccountResponse> getCVOfAccount(String accountId);
-    
+
     void changeAvatar(String profileId, ChangeAvatarRequest request);
 }

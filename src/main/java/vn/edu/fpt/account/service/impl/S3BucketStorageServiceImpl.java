@@ -59,8 +59,7 @@ public class S3BucketStorageServiceImpl implements S3BucketStorageService {
             request.setCannedAcl(CannedAccessControlList.PublicRead);
             request.setMetadata(metadata);
             amazonS3.putObject(request);
-            URL url = amazonS3.getUrl(bucketName, fileKey);
-            return url.toString();
+            return fileKey;
         } catch (Exception ex) {
             throw new BusinessException(ResponseStatusEnum.INTERNAL_SERVER_ERROR, "Can't put object file to AWS S3: " + ex.getMessage());
         } finally {

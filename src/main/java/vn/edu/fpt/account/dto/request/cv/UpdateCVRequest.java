@@ -24,5 +24,4 @@ public class UpdateCVRequest implements Serializable {
     private static final long serialVersionUID = -5095264388141420494L;
     private String cvName;
     private String description;
-    private MultipartFile cv;
 }
