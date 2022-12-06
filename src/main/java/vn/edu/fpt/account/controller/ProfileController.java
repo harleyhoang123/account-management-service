@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.account.dto.common.GeneralResponse;
 import vn.edu.fpt.account.dto.common.PageableResponse;
+import vn.edu.fpt.account.dto.event.CreateProfileEvent;
 import vn.edu.fpt.account.dto.request.profile.ChangeAvatarRequest;
 import vn.edu.fpt.account.dto.request.profile.CreateProfileRequest;
 import vn.edu.fpt.account.dto.request.profile.UpdateProfileRequest;
@@ -22,7 +23,7 @@ import vn.edu.fpt.account.dto.response.profile.GetProfileDetailResponse;
 public interface ProfileController {
 
     @PostMapping(value = "/profile")
-    ResponseEntity<GeneralResponse<Object>> createProfile(@RequestBody CreateProfileRequest request);
+    ResponseEntity<GeneralResponse<Object>> createProfile(@RequestBody CreateProfileEvent event);
 
     @PutMapping("/{profile-id}")
     ResponseEntity<GeneralResponse<Object>> updateProfiles(@PathVariable("profile-id") String parameter, @RequestBody UpdateProfileRequest request);

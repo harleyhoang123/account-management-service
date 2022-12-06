@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import vn.edu.fpt.account.constant.ResponseStatusEnum;
 import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.common.UserInfoResponse;
+import vn.edu.fpt.account.dto.event.CreateProfileEvent;
 import vn.edu.fpt.account.dto.request.profile.ChangeAvatarRequest;
 import vn.edu.fpt.account.dto.request.profile.CreateProfileRequest;
 import vn.edu.fpt.account.dto.request.profile.UpdateProfileRequest;
@@ -44,25 +45,16 @@ public class ProfileServiceImpl implements ProfileService {
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public void createProfile(CreateProfileRequest request) {
-        if (!ObjectId.isValid(request.getAccountId())) {
+    public void createProfile(CreateProfileEvent event) {
+        if (!ObjectId.isValid(event.getAccountId())) {
             throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Account ID invalid");
         }
-        if (profileRepository.findById(request.getAccountId()).isPresent()) {
+        if (profileRepository.findById(event.getAccountId()).isPresent()) {
             throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile already exist");
         }
 
         Profile profile = Profile.builder()
-                .profileId(request.getAccountId())
-                .gender(request.getGender())
-                .address(request.getAddress())
-                .major(request.getMajor())
-                .dateOfBirth(request.getDateOfBirth())
-                .phoneNumber(request.getPhoneNumber())
-                .currentTermNo(request.getCurrentTermNo())
-                .studentCode(request.getStudentCode())
-                .studentId(request.getStudentId())
-                .specialized(request.getSpecialized())
+                .profileId(event.getAccountId())
                 .build();
         try {
             profileRepository.save(profile);
