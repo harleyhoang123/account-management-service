@@ -48,9 +48,8 @@ public class CurriculumVitaeControllerImpl implements CurriculumVitaeController 
     }
 
     @Override
-    public ResponseEntity<GeneralResponse<Object>> downloadCV(String cvId, HttpServletResponse response) {
+    public void downloadCV(String cvId, HttpServletResponse response) {
         cvService.downloadCV(cvId, response);
-        return responseFactory.response(ResponseStatusEnum.SUCCESS);
     }
 
     @Override

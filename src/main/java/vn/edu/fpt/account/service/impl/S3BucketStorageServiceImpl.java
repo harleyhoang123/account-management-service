@@ -10,19 +10,24 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.fpt.account.constant.ResponseStatusEnum;
+import vn.edu.fpt.account.dto.common.CreateFileRequest;
+import vn.edu.fpt.account.entity._File;
 import vn.edu.fpt.account.exception.BusinessException;
 import vn.edu.fpt.account.service.S3BucketStorageService;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.UUID;
 
 /**
@@ -43,31 +48,20 @@ public class S3BucketStorageServiceImpl implements S3BucketStorageService {
     private String bucketName;
 
     @Override
-    public String uploadFile(MultipartFile file) {
-        String fileName = file.getOriginalFilename();
-        try {
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(file.getSize());
-            metadata.setContentType(getContentType(fileName));
-            File convFile = new File(fileName);
+    public void uploadFile(CreateFileRequest request, String fileKey) {
+        String base64 = request.getBase64().split(",")[1];
+        byte[] decodedFile = Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8));
+        InputStream is = new ByteArrayInputStream(decodedFile);
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(request.getMimeType());
+        metadata.setContentLength(request.getSize());
 
-            try (OutputStream os = Files.newOutputStream(Path.of(convFile.getPath()))) {
-                os.write(file.getBytes());
-            }
-            String fileKey = UUID.randomUUID().toString();
-            PutObjectRequest request = new PutObjectRequest(bucketName, fileKey, convFile);
-            request.setCannedAcl(CannedAccessControlList.PublicRead);
-            request.setMetadata(metadata);
-            amazonS3.putObject(request);
-            return fileKey;
-        } catch (Exception ex) {
-            throw new BusinessException(ResponseStatusEnum.INTERNAL_SERVER_ERROR, "Can't put object file to AWS S3: " + ex.getMessage());
-        } finally {
-            try {
-                Files.delete(Paths.get(fileName));
-            } catch (Exception ex) {
-                log.error("Can't delete converted file: " + ex.getMessage());
-            }
+        PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, fileKey, is, metadata);
+        putObjectRequest.setCannedAcl(CannedAccessControlList.PublicRead);
+        try {
+            amazonS3.putObject(putObjectRequest);
+        }catch (Exception ex){
+            throw new BusinessException("Can't push object to s3 bucket: "+ ex.getMessage());
         }
     }
 
@@ -97,6 +91,25 @@ public class S3BucketStorageServiceImpl implements S3BucketStorageService {
                 while ((len = is.read(buffer, 0, buffer.length)) != -1) {
                     response.getOutputStream().write(buffer, 0, len);
                 }
+            }
+        } catch (Exception ex) {
+            throw new BusinessException(ResponseStatusEnum.INTERNAL_SERVER_ERROR, "Can't download file from AWS S3: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void downloadFile(_File file, HttpServletResponse response) {
+        response.setContentType(file.getMimeType());
+        response.setContentLengthLong(file.getLength());
+        try {
+            S3Object s3Object = amazonS3.getObject(new GetObjectRequest(bucketName, file.getFileKey()));
+            try (InputStream is = s3Object.getObjectContent()) {
+                int len;
+                byte[] buffer = new byte[4096];
+                while ((len = is.read(buffer, 0, buffer.length)) != -1) {
+                    response.getOutputStream().write(buffer, 0, len);
+                }
+                response.flushBuffer();
             }
         } catch (Exception ex) {
             throw new BusinessException(ResponseStatusEnum.INTERNAL_SERVER_ERROR, "Can't download file from AWS S3: " + ex.getMessage());

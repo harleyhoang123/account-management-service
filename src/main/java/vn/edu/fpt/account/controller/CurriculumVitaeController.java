@@ -21,16 +21,16 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("${app.application-context}/public/api/v1/cv")
 public interface CurriculumVitaeController {
 
-    @PostMapping(value = "/{profile-id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    ResponseEntity<GeneralResponse<CreateCVResponse>> createCV(@PathVariable(name = "profile-id") String profileId, @ModelAttribute CreateCVRequest request);
+    @PostMapping(value = "/{profile-id}")
+    ResponseEntity<GeneralResponse<CreateCVResponse>> createCV(@PathVariable(name = "profile-id") String profileId, @RequestBody CreateCVRequest request);
 
-    @PutMapping(value = "/{cv-id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    ResponseEntity<GeneralResponse<Object>> updateCV(@PathVariable("cv-id") String cvId, @ModelAttribute UpdateCVRequest request);
+    @PutMapping(value = "/{cv-id}")
+    ResponseEntity<GeneralResponse<Object>> updateCV(@PathVariable("cv-id") String cvId, @RequestBody UpdateCVRequest request);
     @GetMapping("/{cv-id}")
     ResponseEntity<GeneralResponse<GetCVDetailResponse>> getCVDetail(@PathVariable(name = "cv-id") String cvId);
 
     @PostMapping("/{cv-id}")
-    ResponseEntity<GeneralResponse<Object>> downloadCV(@PathVariable(name = "cv-id") String cvId, HttpServletResponse response);
+    void downloadCV(@PathVariable(name = "cv-id") String cvId, HttpServletResponse response);
 
     @DeleteMapping("/{cv-id}")
     ResponseEntity<GeneralResponse<Object>> deleteCV(@PathVariable(name = "cv-id") String cvId);

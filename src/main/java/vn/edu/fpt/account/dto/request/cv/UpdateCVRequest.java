@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+import vn.edu.fpt.account.dto.common.CreateFileRequest;
 
 import java.io.Serializable;
 
@@ -24,4 +25,5 @@ public class UpdateCVRequest implements Serializable {
     private static final long serialVersionUID = -5095264388141420494L;
     private String cvName;
     private String description;
+    private CreateFileRequest cv;
 }
