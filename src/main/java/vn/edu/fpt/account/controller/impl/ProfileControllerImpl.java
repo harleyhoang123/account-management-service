@@ -8,6 +8,7 @@ import vn.edu.fpt.account.constant.ResponseStatusEnum;
 import vn.edu.fpt.account.controller.ProfileController;
 import vn.edu.fpt.account.dto.common.GeneralResponse;
 import vn.edu.fpt.account.dto.common.PageableResponse;
+import vn.edu.fpt.account.dto.event.CreateProfileEvent;
 import vn.edu.fpt.account.dto.request.profile.ChangeAvatarRequest;
 import vn.edu.fpt.account.dto.request.profile.CreateProfileRequest;
 import vn.edu.fpt.account.dto.request.profile.UpdateProfileRequest;
@@ -32,8 +33,8 @@ public class ProfileControllerImpl implements ProfileController {
     private final ProfileService profileService;
 
     @Override
-    public ResponseEntity<GeneralResponse<Object>> createProfile(CreateProfileRequest request) {
-        profileService.createProfile(request);
+    public ResponseEntity<GeneralResponse<Object>> createProfile(CreateProfileEvent event) {
+        profileService.createProfile(event);
         return responseFactory.response(ResponseStatusEnum.SUCCESS);
     }
 
