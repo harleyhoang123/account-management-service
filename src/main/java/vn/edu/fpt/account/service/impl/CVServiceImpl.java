@@ -110,12 +110,11 @@ public class CVServiceImpl implements CVService {
     public GetCVDetailResponse getCVDetailById(String cvId) {
         CurriculumVitae cv = cvRepository.findById(cvId)
                 .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "CV ID not exist"));
-        GetCVDetailResponse getCVDetailResponse = GetCVDetailResponse.builder()
+        return GetCVDetailResponse.builder()
                 .cvId(cv.getCvId())
                 .cvName(cv.getCvName())
                 .description(cv.getDescription())
                 .build();
-        return getCVDetailResponse;
     }
 
     @Override

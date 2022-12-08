@@ -34,7 +34,7 @@ public interface ProfileController {
     @GetMapping("/{account-id}/cv")
     ResponseEntity<GeneralResponse<PageableResponse<GetCVOfAccountResponse>>> getCVOfAccount(@PathVariable(name = "account-id") String accountId);
 
-    @PostMapping(value = "/{profile-id}/avatar", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    ResponseEntity<GeneralResponse<Object>> changeAvatar(@PathVariable(name = "profile-id") String profileId, @ModelAttribute ChangeAvatarRequest request);
+    @PostMapping(value = "/{profile-id}/avatar")
+    ResponseEntity<GeneralResponse<Object>> changeAvatar(@PathVariable(name = "profile-id") String profileId, @RequestBody ChangeAvatarRequest request);
 
 }
