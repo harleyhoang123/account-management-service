@@ -38,4 +38,7 @@ public class UpdateProfileRequest implements Serializable {
     private String major;
     private Integer currentTermNo;
     private String specialized;
+    private String description;
+    private String award;
+    private String interest;
 }
