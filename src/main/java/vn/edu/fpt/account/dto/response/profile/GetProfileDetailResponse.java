@@ -9,6 +9,7 @@ import vn.edu.fpt.account.config.datetime.CustomDateSerializer;
 import vn.edu.fpt.account.dto.common.AuditableResponse;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @author : Hoang Lam
@@ -28,6 +29,10 @@ public class GetProfileDetailResponse extends AuditableResponse {
     private static final long serialVersionUID = 5684387979889249940L;
     private String profileId;
     private String gender;
+    private String fullName;
+    private String username;
+    private String email;
+    private List<String> roles;
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private LocalDate dateOfBirth;
@@ -39,4 +44,7 @@ public class GetProfileDetailResponse extends AuditableResponse {
     private Integer currentTermNo;
     private String specialized;
     private String avatar;
+    private String description;
+    private String award;
+    private String interest;
 }

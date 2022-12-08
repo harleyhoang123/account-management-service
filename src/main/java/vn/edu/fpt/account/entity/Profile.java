@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.FieldType;
 import vn.edu.fpt.account.entity.common.Auditor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -54,5 +55,12 @@ public class Profile extends Auditor {
     private String avatar;
     @Field(name = "cv")
     @DBRef(lazy = true)
-    private List<CurriculumVitae> cv;
+    @Builder.Default
+    private List<CurriculumVitae> cv = new ArrayList<>();
+    @Field(name = "interest")
+    private String interest;
+    @Field(name = "award")
+    private String award;
+    @Field(name = "description")
+    private String description;
 }

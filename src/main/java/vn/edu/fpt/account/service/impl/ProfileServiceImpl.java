@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import vn.edu.fpt.account.constant.ResponseStatusEnum;
+import vn.edu.fpt.account.dto.cache.UserInfo;
 import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.common.UserInfoResponse;
 import vn.edu.fpt.account.dto.event.CreateProfileEvent;
@@ -23,6 +24,7 @@ import vn.edu.fpt.account.service.ProfileService;
 import vn.edu.fpt.account.service.S3BucketStorageService;
 import vn.edu.fpt.account.service.UserInfoService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -98,6 +100,16 @@ public class ProfileServiceImpl implements ProfileService {
         if (Objects.nonNull(request.getSpecialized())) {
             profile.setSpecialized(request.getSpecialized());
         }
+
+        if (Objects.nonNull(request.getAward())) {
+            profile.setSpecialized(request.getAward());
+        }
+        if (Objects.nonNull(request.getInterest())) {
+            profile.setInterest(request.getInterest());
+        }
+        if (Objects.nonNull(request.getDescription())) {
+            profile.setDescription(request.getDescription());
+        }
         try {
             profileRepository.save(profile);
             log.info("Update profile success");
@@ -113,9 +125,20 @@ public class ProfileServiceImpl implements ProfileService {
         }
         Profile profile = profileRepository.findById(profileId)
                 .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID not exist"));
+        UserInfo userInfo = userInfoService.getUserInfo(profileId);
+        if(Objects.isNull(userInfo)){
+            throw new BusinessException("Userinfo not contain redis");
+        }
         return GetProfileDetailResponse.builder()
                 .profileId(profile.getProfileId())
                 .gender(profile.getGender())
+                .username(userInfo.getUsername())
+                .email(userInfo.getEmail())
+                .avatar(userInfo.getAvatar())
+                .roles(userInfo.getRoles())
+                .interest(profile.getInterest())
+                .description(profile.getDescription())
+                .award(profile.getAward())
                 .address(profile.getAddress())
                 .major(profile.getMajor())
                 .dateOfBirth(profile.getDateOfBirth())
@@ -147,7 +170,9 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Account ID not exist"));
 
         List<CurriculumVitae> listCV = profile.getCv();
-
+        if(Objects.isNull(listCV)){
+            return new PageableResponse<>(new ArrayList<>());
+        }
         List<GetCVOfAccountResponse> getCVOfAccountResponses = listCV.stream().map(this::convertCVToGetCVOfAccountResponse).collect(Collectors.toList());
         return new PageableResponse<>(getCVOfAccountResponses);
     }
