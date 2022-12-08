@@ -127,6 +127,10 @@ public class ProfileServiceImpl implements ProfileService {
         if (!ObjectId.isValid(profileId)) {
             throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID invalid");
         }
+        UserInfo userInfo = userInfoService.getUserInfo(profileId);
+        if(Objects.isNull(userInfo)){
+            throw new BusinessException("User info not contain in Redis");
+        }
         Profile profile = profileRepository.findById(profileId)
                 .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID not exist"));
         return GetProfileDetailResponse.builder()
@@ -134,6 +138,11 @@ public class ProfileServiceImpl implements ProfileService {
                 .gender(profile.getGender())
                 .address(profile.getAddress())
                 .major(profile.getMajor())
+                .username(userInfo.getUsername())
+                .email(userInfo.getEmail())
+                .roles(userInfo.getRoles())
+                .avatar(userInfo.getAvatar())
+                .fullName(userInfo.getFullName())
                 .dateOfBirth(profile.getDateOfBirth())
                 .phoneNumber(profile.getPhoneNumber())
                 .currentTermNo(profile.getCurrentTermNo())
