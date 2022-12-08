@@ -3,10 +3,12 @@ package vn.edu.fpt.account.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import vn.edu.fpt.account.constant.ResponseStatusEnum;
+import vn.edu.fpt.account.dto.common.CreateFileRequest;
 import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.common.UserInfoResponse;
 import vn.edu.fpt.account.dto.event.CreateProfileEvent;
@@ -25,6 +27,7 @@ import vn.edu.fpt.account.service.UserInfoService;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -42,7 +45,8 @@ public class ProfileServiceImpl implements ProfileService {
     private final ProfileRepository profileRepository;
     private final UserInfoService userInfoService;
     private final S3BucketStorageService s3BucketStorageService;
-    private final MongoTemplate mongoTemplate;
+    @Value("${application.account.cloudfront}")
+    private String accountCloudFront;
 
     @Override
     public void createProfile(CreateProfileEvent event) {
@@ -163,8 +167,10 @@ public class ProfileServiceImpl implements ProfileService {
         if (request.getAvatar() == null) {
             throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Avatar invalid");
         }
-
-        profile.setAvatar(s3BucketStorageService.uploadFile(request.getAvatar()));
+        CreateFileRequest createFileRequest = request.getAvatar();
+        String fileKey = UUID.randomUUID().toString();
+        s3BucketStorageService.uploadFile(createFileRequest, fileKey);
+        profile.setAvatar(accountCloudFront+fileKey);
         log.info("Change avatar success");
 
         try {

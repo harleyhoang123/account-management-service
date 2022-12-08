@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+import vn.edu.fpt.account.dto.common.CreateFileRequest;
 
 import java.io.Serializable;
 
@@ -22,5 +23,5 @@ import java.io.Serializable;
 public class ChangeAvatarRequest implements Serializable {
 
     private static final long serialVersionUID = 3747410200687205822L;
-    private MultipartFile avatar;
+    private CreateFileRequest avatar;
 }
