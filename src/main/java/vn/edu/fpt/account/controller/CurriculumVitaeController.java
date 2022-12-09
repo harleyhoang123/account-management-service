@@ -29,7 +29,7 @@ public interface CurriculumVitaeController {
     @GetMapping("/{cv-id}")
     ResponseEntity<GeneralResponse<GetCVDetailResponse>> getCVDetail(@PathVariable(name = "cv-id") String cvId);
 
-    @PostMapping("/{cv-id}")
+    @GetMapping("/{cv-id}/download")
     void downloadCV(@PathVariable(name = "cv-id") String cvId, HttpServletResponse response);
 
     @DeleteMapping("/{cv-id}")
