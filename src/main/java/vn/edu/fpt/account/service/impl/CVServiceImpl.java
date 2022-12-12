@@ -148,14 +148,28 @@ public class CVServiceImpl implements CVService {
     }
 
     @Override
-    public void deleteCVById(String cvId) {
+    public void deleteCVById(String profileId, String cvId) {
+        Profile profile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID not exist"));
         CurriculumVitae cv = cvRepository.findById(cvId)
                 .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "CV ID not exist"));
+        List<CurriculumVitae> cvs = profile.getCv();
+        if (cvs.stream().noneMatch(m->m.getCvId().equals(cvId))) {
+            throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "CV ID not exist in Profile");
+        }
+        cvs.removeIf(m->m.getCvId().equals(cvId));
+        profile.setCv(cvs);
         try {
             cvRepository.deleteById(cvId);
             log.info("Delete cv success");
         } catch (Exception ex) {
             throw new BusinessException("Can't delete cv: " + ex.getMessage());
+        }
+        try {
+            cvRepository.save(cv);
+            log.info("Update cv success");
+        } catch (Exception ex) {
+            throw new BusinessException("Can't update cv: " + ex.getMessage());
         }
     }
 }

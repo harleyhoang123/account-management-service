@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import vn.edu.fpt.account.constant.ResponseStatusEnum;
@@ -13,6 +15,7 @@ import vn.edu.fpt.account.dto.cache.UserInfo;
 import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.common.UserInfoResponse;
 import vn.edu.fpt.account.dto.event.CreateProfileEvent;
+import vn.edu.fpt.account.dto.request.cv.GetCVOfAccountRequest;
 import vn.edu.fpt.account.dto.request.profile.ChangeAvatarRequest;
 import vn.edu.fpt.account.dto.request.profile.CreateProfileRequest;
 import vn.edu.fpt.account.dto.request.profile.UpdateProfileRequest;
@@ -21,6 +24,7 @@ import vn.edu.fpt.account.dto.response.profile.GetProfileDetailResponse;
 import vn.edu.fpt.account.entity.CurriculumVitae;
 import vn.edu.fpt.account.entity.Profile;
 import vn.edu.fpt.account.exception.BusinessException;
+import vn.edu.fpt.account.repository.BaseMongoRepository;
 import vn.edu.fpt.account.repository.ProfileRepository;
 import vn.edu.fpt.account.service.ProfileService;
 import vn.edu.fpt.account.service.S3BucketStorageService;
@@ -47,6 +51,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final ProfileRepository profileRepository;
     private final UserInfoService userInfoService;
     private final S3BucketStorageService s3BucketStorageService;
+    private final MongoTemplate mongoTemplate;
     @Value("${application.account.cloudfront}")
     private String accountCloudFront;
 
@@ -164,19 +169,33 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public PageableResponse<GetCVOfAccountResponse> getCVOfAccount(String accountId) {
+    public PageableResponse<GetCVOfAccountResponse> getCVOfAccount(String accountId, GetCVOfAccountRequest request) {
+        Query query = new Query();
+        if (Objects.nonNull(request.getCvId())) {
+            query.addCriteria(Criteria.where("_id").is(request.getCvId()));
+        }
+        if (Objects.nonNull(request.getCvId())) {
+            query.addCriteria(Criteria.where("cv_name").is(request.getCvName()));
+        }
         if (!ObjectId.isValid(accountId)) {
             throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Account ID not exist");
         }
+
         Profile profile = profileRepository.findById(accountId)
                 .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Account ID not exist"));
 
         List<CurriculumVitae> listCV = profile.getCv();
-        if(Objects.isNull(listCV)){
-            return new PageableResponse<>(new ArrayList<>());
-        }
-        List<GetCVOfAccountResponse> getCVOfAccountResponses = listCV.stream().map(this::convertCVToGetCVOfAccountResponse).collect(Collectors.toList());
-        return new PageableResponse<>(getCVOfAccountResponses);
+        List<ObjectId> listCvId = listCV.stream().map(CurriculumVitae::getCvId).map(ObjectId::new).collect(Collectors.toList());
+        query.addCriteria(Criteria.where("_id").in(listCvId));
+
+        BaseMongoRepository.addCriteriaWithAuditable(query, request);
+        Long totalElements = mongoTemplate.count(query, CurriculumVitae.class);
+        BaseMongoRepository.addCriteriaWithPageable(query, request);
+        BaseMongoRepository.addCriteriaWithSorted(query, request);
+        List<CurriculumVitae> cvs = mongoTemplate.find(query, CurriculumVitae.class);
+
+        List<GetCVOfAccountResponse> getCVOfAccountResponses = cvs.stream().map(this::convertCVToGetCVOfAccountResponse).collect(Collectors.toList());
+        return new PageableResponse<>(request, totalElements, getCVOfAccountResponses);
     }
 
     @Override

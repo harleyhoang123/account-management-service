@@ -53,8 +53,8 @@ public class CurriculumVitaeControllerImpl implements CurriculumVitaeController 
     }
 
     @Override
-    public ResponseEntity<GeneralResponse<Object>> deleteCV(String cvId) {
-        cvService.deleteCVById(cvId);
+    public ResponseEntity<GeneralResponse<Object>> deleteCV(String profileId, String cvId) {
+        cvService.deleteCVById(profileId, cvId);
         return responseFactory.response(ResponseStatusEnum.SUCCESS);
     }
 }
