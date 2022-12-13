@@ -166,10 +166,10 @@ public class CVServiceImpl implements CVService {
             throw new BusinessException("Can't delete cv: " + ex.getMessage());
         }
         try {
-            cvRepository.save(cv);
-            log.info("Update cv success");
+            profileRepository.save(profile);
+            log.info("Update profile success");
         } catch (Exception ex) {
-            throw new BusinessException("Can't update cv: " + ex.getMessage());
+            throw new BusinessException("Can't update profile: " + ex.getMessage());
         }
     }
 }
