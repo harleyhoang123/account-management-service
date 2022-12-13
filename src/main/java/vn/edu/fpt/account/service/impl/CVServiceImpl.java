@@ -149,8 +149,9 @@ public class CVServiceImpl implements CVService {
 
     @Override
     public void deleteCVById(String cvId) {
-        CurriculumVitae cv = cvRepository.findById(cvId)
+        cvRepository.findById(cvId)
                 .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "CV ID not exist"));
+
         try {
             cvRepository.deleteById(cvId);
             log.info("Delete cv success");
