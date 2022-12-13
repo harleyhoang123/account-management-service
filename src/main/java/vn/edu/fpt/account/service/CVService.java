@@ -24,5 +24,5 @@ public interface CVService {
 
     void downloadCV(String cvId, HttpServletResponse response);
 
-    void deleteCVById(String cvId);
+    void deleteCVById(String profileId, String cvId);
 }

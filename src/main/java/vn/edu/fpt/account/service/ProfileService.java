@@ -2,6 +2,7 @@ package vn.edu.fpt.account.service;
 
 import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.event.CreateProfileEvent;
+import vn.edu.fpt.account.dto.request.cv.GetCVOfAccountRequest;
 import vn.edu.fpt.account.dto.request.profile.ChangeAvatarRequest;
 import vn.edu.fpt.account.dto.request.profile.CreateProfileRequest;
 import vn.edu.fpt.account.dto.request.profile.UpdateProfileRequest;
@@ -23,7 +24,7 @@ public interface ProfileService {
 
     GetProfileDetailResponse getProfileDetails(String profileId);
 
-    PageableResponse<GetCVOfAccountResponse> getCVOfAccount(String accountId);
+    PageableResponse<GetCVOfAccountResponse> getCVOfAccount(String accountId, GetCVOfAccountRequest request);
 
     void changeAvatar(String profileId, ChangeAvatarRequest request);
 }
