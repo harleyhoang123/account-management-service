@@ -95,9 +95,6 @@ public class ProfileServiceImpl implements ProfileService {
         if (Objects.nonNull(request.getDateOfBirth())) {
             profile.setDateOfBirth(request.getDateOfBirth());
         }
-        if (Objects.nonNull(request.getPhoneNumber())) {
-            profile.setPhoneNumber(request.getPhoneNumber());
-        }
         if (Objects.nonNull(request.getCurrentTermNo())) {
             profile.setCurrentTermNo(request.getCurrentTermNo());
         }
@@ -112,7 +109,7 @@ public class ProfileServiceImpl implements ProfileService {
         }
 
         if (Objects.nonNull(request.getAward())) {
-            profile.setSpecialized(request.getAward());
+            profile.setAward(request.getAward());
         }
         if (Objects.nonNull(request.getInterest())) {
             profile.setInterest(request.getInterest());
