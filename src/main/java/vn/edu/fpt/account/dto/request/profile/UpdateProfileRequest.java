@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 import vn.edu.fpt.account.config.datetime.CustomDateDeserializer;
 import vn.edu.fpt.account.config.datetime.CustomDateSerializer;
 
@@ -32,7 +31,6 @@ public class UpdateProfileRequest implements Serializable {
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private LocalDate dateOfBirth;
     private String address;
-    private String phoneNumber;
     private String studentId;
     private String studentCode;
     private String major;
