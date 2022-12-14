@@ -1,5 +1,6 @@
 package vn.edu.fpt.account.service.impl;
 
+import com.amazonaws.services.s3.AmazonS3;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
@@ -78,10 +79,10 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public void updateProfile(String profileId, UpdateProfileRequest request) {
         if (!ObjectId.isValid(profileId)) {
-            throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID invalid");
+            throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID invalid: "+ profileId);
         }
         Profile profile = profileRepository.findById(profileId)
-                .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID not exist"));
+                .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID not exist: "+ profileId));
         if (Objects.nonNull(request.getGender())) {
             profile.setGender(request.getGender());
         }
@@ -137,7 +138,7 @@ public class ProfileServiceImpl implements ProfileService {
             throw new BusinessException("User info not contain in Redis");
         }
         Profile profile = profileRepository.findById(profileId)
-                .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID not exist"));
+                .orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile ID not exist: "+ profileId));
         return GetProfileDetailResponse.builder()
                 .profileId(profile.getProfileId())
                 .gender(profile.getGender())
@@ -228,6 +229,8 @@ public class ProfileServiceImpl implements ProfileService {
         return GetCVOfAccountResponse.builder()
                 .cvId(curriculumVitae.getCvId())
                 .cvName(curriculumVitae.getCvName())
+                .description(curriculumVitae.getDescription())
+                .cvUrl(accountCloudFront+curriculumVitae.getFile().getFileKey())
                 .build();
     }
 }

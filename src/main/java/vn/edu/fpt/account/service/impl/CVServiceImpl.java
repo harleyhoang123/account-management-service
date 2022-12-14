@@ -127,6 +127,26 @@ public class CVServiceImpl implements CVService {
         if (Objects.nonNull(request.getDescription())) {
             cv.setDescription(request.getDescription());
         }
+        if(Objects.nonNull(request.getCv())) {
+            CreateFileRequest createFileRequest = request.getCv();
+            String fileKey = UUID.randomUUID().toString();
+            s3BucketStorageService.uploadFile(request.getCv(), fileKey);
+            _File file = _File.builder()
+                    .fileName(createFileRequest.getName())
+                    .description(request.getDescription())
+                    .fileKey(fileKey)
+                    .type(createFileRequest.getName().split("\\.")[1])
+                    .length(createFileRequest.getSize())
+                    .size(FileUtils.getFileSize(createFileRequest.getSize()))
+                    .mimeType(createFileRequest.getMimeType())
+                    .build();
+            try {
+                file = fileRepository.save(file);
+            }catch (Exception ex){
+                throw new BusinessException("Can't save file to database: "+ ex.getMessage());
+            }
+            cv.setFile(file);
+        }
         try {
             cvRepository.save(cv);
             log.info("Update cv success");

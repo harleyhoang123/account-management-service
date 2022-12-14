@@ -22,4 +22,6 @@ public class GetCVOfAccountResponse extends AuditableResponse {
     private static final long serialVersionUID = -5646159877445859842L;
     private String cvId;
     private String cvName;
+    private String description;
+    private String cvUrl;
 }
