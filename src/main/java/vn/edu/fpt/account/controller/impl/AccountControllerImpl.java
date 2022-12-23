@@ -12,6 +12,7 @@ import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.common.SortableRequest;
 import vn.edu.fpt.account.dto.request.account.*;
 import vn.edu.fpt.account.dto.response.account.CreateAccountResponse;
+import vn.edu.fpt.account.dto.response.account.GetAccountNotInLabResponse;
 import vn.edu.fpt.account.dto.response.account.GetAccountResponse;
 import vn.edu.fpt.account.dto.response.account.LoginResponse;
 import vn.edu.fpt.account.factory.ResponseFactory;
@@ -144,5 +145,10 @@ public class AccountControllerImpl implements AccountController {
     public ResponseEntity<GeneralResponse<Object>> removeRoleFromAccount(String id, String roleId) {
         accountService.removeRoleFromAccount(id, roleId);
         return responseFactory.response(ResponseStatusEnum.SUCCESS);
+    }
+
+    @Override
+    public ResponseEntity<GeneralResponse<PageableResponse<GetAccountNotInLabResponse>>> getAccountNotInLab(GetAccountNotInLabRequest request) {
+        return responseFactory.response(accountService.getAccountNotInLab(request));
     }
 }

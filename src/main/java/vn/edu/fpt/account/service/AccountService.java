@@ -1,9 +1,11 @@
 package vn.edu.fpt.account.service;
 
 import org.springframework.security.core.userdetails.UserDetails;
+import vn.edu.fpt.account.constant.ResponseStatusEnum;
 import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.request.account.*;
 import vn.edu.fpt.account.dto.response.account.CreateAccountResponse;
+import vn.edu.fpt.account.dto.response.account.GetAccountNotInLabResponse;
 import vn.edu.fpt.account.dto.response.account.GetAccountResponse;
 import vn.edu.fpt.account.dto.response.account.LoginResponse;
 
@@ -39,4 +41,6 @@ public interface AccountService {
     void removeRoleFromAccount(String id, String roleId);
 
     PageableResponse<GetAccountResponse> getAccountByCondition(GetAccountRequest request);
+
+    PageableResponse<GetAccountNotInLabResponse> getAccountNotInLab(GetAccountNotInLabRequest request);
 }

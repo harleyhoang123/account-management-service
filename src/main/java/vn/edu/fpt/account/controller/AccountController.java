@@ -7,6 +7,7 @@ import vn.edu.fpt.account.dto.common.GeneralResponse;
 import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.request.account.*;
 import vn.edu.fpt.account.dto.response.account.CreateAccountResponse;
+import vn.edu.fpt.account.dto.response.account.GetAccountNotInLabResponse;
 import vn.edu.fpt.account.dto.response.account.GetAccountResponse;
 import vn.edu.fpt.account.dto.response.account.LoginResponse;
 
@@ -83,4 +84,7 @@ public interface AccountController {
             @PathVariable("id") String id,
             @PathVariable("role-id") String roleId
     );
+
+    @PostMapping("/lab")
+    ResponseEntity<GeneralResponse<PageableResponse<GetAccountNotInLabResponse>>> getAccountNotInLab(@RequestBody GetAccountNotInLabRequest request);
 }

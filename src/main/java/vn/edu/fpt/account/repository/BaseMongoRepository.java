@@ -41,8 +41,10 @@ public class BaseMongoRepository {
     }
 
     public static void addCriteriaWithSorted(Query query, PageableRequest request){
-        request.getSortBy().forEach(v -> {
-            query.with(Sort.by(v.getDirection(), v.getProperty()));
-        });
+        if(Objects.nonNull(request.getSortBy())) {
+            request.getSortBy().forEach(v -> {
+                query.with(Sort.by(v.getDirection(), v.getProperty()));
+            });
+        }
     }
 }

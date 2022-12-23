@@ -24,6 +24,7 @@ import vn.edu.fpt.account.dto.event.CreateProfileEvent;
 import vn.edu.fpt.account.dto.event.SendEmailEvent;
 import vn.edu.fpt.account.dto.request.account.*;
 import vn.edu.fpt.account.dto.response.account.CreateAccountResponse;
+import vn.edu.fpt.account.dto.response.account.GetAccountNotInLabResponse;
 import vn.edu.fpt.account.dto.response.account.GetAccountResponse;
 import vn.edu.fpt.account.dto.response.account.LoginResponse;
 import vn.edu.fpt.account.entity.Account;
@@ -381,6 +382,30 @@ public class AccountServiceImpl implements AccountService {
         }
         List<GetAccountResponse> getAccountResponses = accounts.stream().map(this::convertToGetAccountResponse).collect(Collectors.toList());
         return new PageableResponse<>(request, totalElements, getAccountResponses);
+    }
+
+    @Override
+    public PageableResponse<GetAccountNotInLabResponse> getAccountNotInLab(GetAccountNotInLabRequest request) {
+        Query query = new Query();
+        if(Objects.nonNull(request.getUsername())){
+            query.addCriteria(Criteria.where("username").regex(request.getUsername()));
+        }
+        query.addCriteria(Criteria.where("_id").nin(request.getAccountIds().stream().map(ObjectId::new).collect(Collectors.toList())));
+        Long totalElements = mongoTemplate.count(query, Account.class);
+        BaseMongoRepository.addCriteriaWithPageable(query, request);
+        BaseMongoRepository.addCriteriaWithSorted(query, request);
+        List<Account> accounts = mongoTemplate.find(query, Account.class);
+        List<GetAccountNotInLabResponse> responses = accounts.stream().map(this::convertToGetAccountNotInLab).collect(Collectors.toList());
+        return new PageableResponse<>(request, totalElements, responses );
+    }
+
+    private GetAccountNotInLabResponse convertToGetAccountNotInLab(Account account){
+        return GetAccountNotInLabResponse.builder()
+                .accountId(account.getAccountId())
+                .username(account.getUsername())
+                .email(account.getEmail())
+                .fullName(account.getFullName())
+                .build();
     }
 
     private GetAccountResponse convertToGetAccountResponse(Account account) {
