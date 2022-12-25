@@ -1,5 +1,6 @@
 package vn.edu.fpt.account.dto.response.account;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,7 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginResponse implements Serializable {
 
     private static final long serialVersionUID = 8619678507118001064L;
@@ -37,4 +39,5 @@ public class LoginResponse implements Serializable {
     private LocalDateTime tokenExpireTime;
     @JsonSerialize(using = CustomDateTimeSerializer.class)
     private LocalDateTime refreshTokenExpireTime;
+    private String documentId;
 }

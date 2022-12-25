@@ -110,6 +110,31 @@ public class TokenServiceImpl implements _TokenService {
     }
 
     @Override
+    public String generateOTT(String username, String projectId){
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("account-id", username);
+        claims.put("document-id", projectId);
+        claims.put("id", UUID.randomUUID().toString());
+        return Jwts.builder()
+                .addClaims(claims)
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    @Override
+    public String getOTTClaims(String ott, String key) {
+        try {
+            Jws<Claims> claimsJws = validateToken(ott);
+            Claims claims = claimsJws.getBody();
+            UUID.fromString(claims.get("id", String.class));
+            return claims.get(key, String.class);
+        }catch (Exception ex){
+            throw new BusinessException(ResponseStatusEnum.UNAUTHORIZED, "Token invalid");
+        }
+
+    }
+
+    @Override
     public LocalDateTime getExpiredTimeFromToken(String token) {
         Claims claims = getClaimsFromToken(token);
         long expiredTime = claims.get(Claims.EXPIRATION, Long.class);

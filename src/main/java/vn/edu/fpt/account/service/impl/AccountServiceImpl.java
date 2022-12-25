@@ -9,6 +9,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,16 +26,15 @@ import vn.edu.fpt.account.dto.event.CreateAccountActivityEvent;
 import vn.edu.fpt.account.dto.event.CreateProfileEvent;
 import vn.edu.fpt.account.dto.event.SendEmailEvent;
 import vn.edu.fpt.account.dto.request.account.*;
-import vn.edu.fpt.account.dto.response.account.CreateAccountResponse;
-import vn.edu.fpt.account.dto.response.account.GetAccountNotInLabResponse;
-import vn.edu.fpt.account.dto.response.account.GetAccountResponse;
-import vn.edu.fpt.account.dto.response.account.LoginResponse;
+import vn.edu.fpt.account.dto.response.account.*;
 import vn.edu.fpt.account.entity.Account;
+import vn.edu.fpt.account.entity.OttHistory;
 import vn.edu.fpt.account.entity._Permission;
 import vn.edu.fpt.account.entity._Role;
 import vn.edu.fpt.account.exception.BusinessException;
 import vn.edu.fpt.account.repository.AccountRepository;
 import vn.edu.fpt.account.repository.BaseMongoRepository;
+import vn.edu.fpt.account.repository.OttHistoryRepository;
 import vn.edu.fpt.account.repository.RoleRepository;
 import vn.edu.fpt.account.service.*;
 import vn.edu.fpt.account.utils.AuthenticationUtils;
@@ -67,7 +69,7 @@ public class AccountServiceImpl implements AccountService {
     private final MongoTemplate mongoTemplate;
     private final RoleService roleService;
     private final ProfileService profileService;
-
+    private final OttHistoryRepository ottHistoryRepository;
     @Override
     public void init() {
         if (accountRepository.findAccountByEmailOrUsername("admin").isEmpty()) {
@@ -397,6 +399,60 @@ public class AccountServiceImpl implements AccountService {
         List<Account> accounts = mongoTemplate.find(query, Account.class);
         List<GetAccountNotInLabResponse> responses = accounts.stream().map(this::convertToGetAccountNotInLab).collect(Collectors.toList());
         return new PageableResponse<>(request, totalElements, responses );
+    }
+
+    @Override
+    public GetOTTResponse generateOTT(GenerateOTTRequest request) {
+        String accountId = Optional.ofNullable(SecurityContextHolder.getContext())
+                .map(SecurityContext::getAuthentication)
+                .filter(Authentication::isAuthenticated)
+                .map(Authentication::getPrincipal)
+                .map(User.class::cast)
+                .map(User::getUsername)
+                .orElseThrow();
+
+        String ott = tokenService.generateOTT(accountId, request.getProjectId());
+        OttHistory ottHistory = OttHistory.builder()
+                .ott(ott)
+                .build();
+        try {
+            ottHistoryRepository.save(ottHistory);
+        }catch (Exception ex){
+            throw new BusinessException("Can't save ott history to database: "+ ex.getMessage());
+        }
+
+        return GetOTTResponse.builder()
+                .ott(ott)
+                .build();
+
+    }
+
+    @Override
+    public LoginResponse verifyOTT(VerifyOTTRequest request) {
+        try {
+            OttHistory ottHistory = ottHistoryRepository.findOttHistoriesByOtt(request.getOtt()).orElseThrow();
+            ottHistoryRepository.delete(ottHistory);
+        }catch (Exception ex){
+            throw new BusinessException(ResponseStatusEnum.UNAUTHORIZED, "OTT invalid");
+        }
+        String accountId = tokenService.getOTTClaims(request.getOtt(), "account-id");
+        String documentId = tokenService.getOTTClaims(request.getOtt(), "document-id");
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow();
+        String token = tokenService.generateToken(account, getUserByUsername(account.getUsername()));
+        UserInfo userInfo = userInfoService.getUserInfo(account.getAccountId());
+        List<String> roles = account.getRoles().stream().map(_Role::getRoleName).collect(Collectors.toList());
+        return LoginResponse.builder()
+                .accountId(account.getAccountId())
+                .username(account.getUsername())
+                .fullName(account.getFullName())
+                .email(account.getEmail())
+                .role(roles)
+                .avatar(userInfo == null ? null : userInfo.getAvatar())
+                .token(token)
+                .tokenExpireTime(tokenService.getExpiredTimeFromToken(token))
+                .documentId(documentId)
+                .build();
     }
 
     private GetAccountNotInLabResponse convertToGetAccountNotInLab(Account account){

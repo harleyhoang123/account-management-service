@@ -6,10 +6,7 @@ import vn.edu.fpt.account.config.security.annotation.IsAdmin;
 import vn.edu.fpt.account.dto.common.GeneralResponse;
 import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.request.account.*;
-import vn.edu.fpt.account.dto.response.account.CreateAccountResponse;
-import vn.edu.fpt.account.dto.response.account.GetAccountNotInLabResponse;
-import vn.edu.fpt.account.dto.response.account.GetAccountResponse;
-import vn.edu.fpt.account.dto.response.account.LoginResponse;
+import vn.edu.fpt.account.dto.response.account.*;
 
 import java.util.List;
 
@@ -87,4 +84,10 @@ public interface AccountController {
 
     @PostMapping("/lab")
     ResponseEntity<GeneralResponse<PageableResponse<GetAccountNotInLabResponse>>> getAccountNotInLab(@RequestBody GetAccountNotInLabRequest request);
+
+    @PostMapping("/account/ott")
+    ResponseEntity<GeneralResponse<GetOTTResponse>> getOTT(@RequestBody GenerateOTTRequest request);
+
+    @PostMapping("/account/ott/verify")
+    ResponseEntity<GeneralResponse<LoginResponse>> verifyOTT(@RequestBody VerifyOTTRequest request);
 }

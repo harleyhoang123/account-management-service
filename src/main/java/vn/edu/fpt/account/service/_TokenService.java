@@ -27,4 +27,8 @@ public interface _TokenService {
 
     LoginRequest getLoginRequestFromToken(String token);
 
+    String generateOTT(String username, String projectId);
+
+    String getOTTClaims(String ott, String key);
+
 }

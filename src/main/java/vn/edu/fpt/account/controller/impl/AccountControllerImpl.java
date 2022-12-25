@@ -11,10 +11,7 @@ import vn.edu.fpt.account.dto.common.GeneralResponse;
 import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.common.SortableRequest;
 import vn.edu.fpt.account.dto.request.account.*;
-import vn.edu.fpt.account.dto.response.account.CreateAccountResponse;
-import vn.edu.fpt.account.dto.response.account.GetAccountNotInLabResponse;
-import vn.edu.fpt.account.dto.response.account.GetAccountResponse;
-import vn.edu.fpt.account.dto.response.account.LoginResponse;
+import vn.edu.fpt.account.dto.response.account.*;
 import vn.edu.fpt.account.factory.ResponseFactory;
 import vn.edu.fpt.account.service.AccountService;
 
@@ -150,5 +147,15 @@ public class AccountControllerImpl implements AccountController {
     @Override
     public ResponseEntity<GeneralResponse<PageableResponse<GetAccountNotInLabResponse>>> getAccountNotInLab(GetAccountNotInLabRequest request) {
         return responseFactory.response(accountService.getAccountNotInLab(request));
+    }
+
+    @Override
+    public ResponseEntity<GeneralResponse<GetOTTResponse>> getOTT(GenerateOTTRequest request) {
+        return responseFactory.response(accountService.generateOTT(request));
+    }
+
+    @Override
+    public ResponseEntity<GeneralResponse<LoginResponse>> verifyOTT(VerifyOTTRequest request) {
+        return responseFactory.response(accountService.verifyOTT(request));
     }
 }

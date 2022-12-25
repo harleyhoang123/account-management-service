@@ -78,11 +78,13 @@ public class SecurityConfiguration {
     public WebSecurityCustomizer webSecurityCustomizer(){
         return (web) -> web
                 .ignoring()
-                .antMatchers("/actuator/health")
+                .antMatchers("/actuator/**")
                 .antMatchers(HttpMethod.POST,"/"+applicationContext+"/public/api/v1/accounts/account")
                 .antMatchers(HttpMethod.POST, "/"+applicationContext+"/public/api/v1/accounts/account/login")
                 .antMatchers(HttpMethod.POST,"/"+applicationContext+"/public/api/v1/accounts/token/refresh")
-                .antMatchers(HttpMethod.POST, "/"+applicationContext+"/public/api/v1/accounts/password/reset");
+                .antMatchers(HttpMethod.POST, "/"+applicationContext+"/public/api/v1/accounts/password/reset")
+                .antMatchers(HttpMethod.POST, "/"+applicationContext+"/public/api/v1/accounts/account/ott/verify");
+
     }
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
