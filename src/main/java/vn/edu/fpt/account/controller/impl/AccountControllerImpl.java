@@ -158,4 +158,16 @@ public class AccountControllerImpl implements AccountController {
     public ResponseEntity<GeneralResponse<LoginResponse>> verifyOTT(VerifyOTTRequest request) {
         return responseFactory.response(accountService.verifyOTT(request));
     }
+
+    @Override
+    public ResponseEntity<GeneralResponse<Object>> sendVerifyPhoneNumber(String id, SendVerifyPhoneNumberRequest request) {
+        accountService.sendVerifyPhoneNumber(id, request);
+        return responseFactory.response(ResponseStatusEnum.SUCCESS);
+    }
+
+    @Override
+    public ResponseEntity<GeneralResponse<Object>> verifyPhoneNumber(String id, VerifyPhoneNumberRequest request) {
+        accountService.verifyPhoneNumber(id, request);
+        return responseFactory.response(ResponseStatusEnum.SUCCESS);
+    }
 }

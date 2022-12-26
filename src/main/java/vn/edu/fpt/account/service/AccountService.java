@@ -44,4 +44,8 @@ public interface AccountService {
     GetOTTResponse generateOTT(GenerateOTTRequest request);
 
     LoginResponse verifyOTT(VerifyOTTRequest request);
+
+    void sendVerifyPhoneNumber(String id, SendVerifyPhoneNumberRequest request);
+
+    void verifyPhoneNumber(String id, VerifyPhoneNumberRequest request);
 }

@@ -19,26 +19,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.account.config.kafka.producer.CreateAccountActivityProducer;
 import vn.edu.fpt.account.config.kafka.producer.SendEmailProducer;
+import vn.edu.fpt.account.config.kafka.producer.SendSMSProducer;
 import vn.edu.fpt.account.constant.ResponseStatusEnum;
 import vn.edu.fpt.account.dto.cache.UserInfo;
 import vn.edu.fpt.account.dto.common.PageableResponse;
 import vn.edu.fpt.account.dto.event.CreateAccountActivityEvent;
 import vn.edu.fpt.account.dto.event.CreateProfileEvent;
 import vn.edu.fpt.account.dto.event.SendEmailEvent;
+import vn.edu.fpt.account.dto.event.SendSmsEvent;
 import vn.edu.fpt.account.dto.request.account.*;
 import vn.edu.fpt.account.dto.response.account.*;
-import vn.edu.fpt.account.entity.Account;
-import vn.edu.fpt.account.entity.OttHistory;
-import vn.edu.fpt.account.entity._Permission;
-import vn.edu.fpt.account.entity._Role;
+import vn.edu.fpt.account.entity.*;
 import vn.edu.fpt.account.exception.BusinessException;
-import vn.edu.fpt.account.repository.AccountRepository;
-import vn.edu.fpt.account.repository.BaseMongoRepository;
-import vn.edu.fpt.account.repository.OttHistoryRepository;
-import vn.edu.fpt.account.repository.RoleRepository;
+import vn.edu.fpt.account.repository.*;
 import vn.edu.fpt.account.service.*;
 import vn.edu.fpt.account.utils.AuthenticationUtils;
+import vn.edu.fpt.account.utils.OTPHistoryComparator;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,6 +68,10 @@ public class AccountServiceImpl implements AccountService {
     private final RoleService roleService;
     private final ProfileService profileService;
     private final OttHistoryRepository ottHistoryRepository;
+    private final OTPHistoryRepository otpHistoryRepository;
+    private final SendSMSProducer sendSMSProducer;
+    private final ProfileRepository profileRepository;
+
     @Override
     public void init() {
         if (accountRepository.findAccountByEmailOrUsername("admin").isEmpty()) {
@@ -455,6 +457,94 @@ public class AccountServiceImpl implements AccountService {
                 .build();
     }
 
+    @Override
+    public void sendVerifyPhoneNumber(String id, SendVerifyPhoneNumberRequest request) {
+        accountRepository.findById(id).orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Account Id not exist"));
+        String phoneNumber = AuthenticationUtils.validatePhoneNumber(request.getPhoneNumber());
+        String code = generateVerifyPhoneNumberCode();
+        List<OTPHistory> otpHistoryList = otpHistoryRepository.findByAccountIdAndEnable(id, true);
+
+        otpHistoryList.forEach(
+                v -> v.setEnable(false)
+        );
+        try {
+            otpHistoryRepository.saveAll(otpHistoryList);
+        }catch (Exception ex){
+
+        }
+        OTPHistory otpHistory = OTPHistory.builder()
+                .accountId(id)
+                .code(code)
+                .data(phoneNumber)
+                .enable(true)
+                .expiredTime(LocalDateTime.now().plusMinutes(5))
+                .build();
+
+        if(Objects.nonNull(phoneNumber)){
+            SendSmsEvent event = SendSmsEvent.builder()
+                    .sendTo(phoneNumber)
+                    .templateId("63a956d46158f173e38320c2")
+                    .params(Map.of("CODE", code))
+                    .build();
+            try {
+                sendSMSProducer.sendMessage(event);
+                otpHistoryRepository.save(otpHistory);
+            }catch (Exception ex){
+                throw new BusinessException("Can't save otp history to database: "+ ex.getMessage());
+            }
+        }else{
+            throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Phone number invalid");
+        }
+
+    }
+
+    private String generateVerifyPhoneNumberCode() {
+        StringBuilder stringBuilder = new StringBuilder();
+        Random random = new Random();
+        int[] randomNumber;
+        do {
+            randomNumber = random.ints(6 * 5L, 48, 57)
+                    .toArray();
+        }while (randomNumber.length == 6);
+        for (int i = 0; i < 6; i++) {
+            stringBuilder.append((char) randomNumber[i]);
+        }
+        return stringBuilder.toString();
+    }
+
+    @Override
+    public void verifyPhoneNumber(String id, VerifyPhoneNumberRequest request) {
+        accountRepository.findById(id).orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Account Id not exist"));
+        Profile profile = profileRepository.findById(id).orElseThrow(() -> new BusinessException(ResponseStatusEnum.BAD_REQUEST, "Profile Id not exist"));
+        List<OTPHistory> otpHistoryList = otpHistoryRepository.findByAccountIdAndEnable(id, true);
+        OTPHistory otpHistory;
+        if(otpHistoryList.size()> 1){
+            otpHistoryList.sort(new OTPHistoryComparator());
+        }
+        if(otpHistoryList.isEmpty()){
+            throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "OTP Invalid");
+        }
+        otpHistory = otpHistoryList.get(0);
+        otpHistoryList.forEach(
+                v -> v.setEnable(false)
+        );
+        try {
+            otpHistoryRepository.saveAll(otpHistoryList);
+        }catch (Exception ex){
+            throw new BusinessException("Can't save all otp history to database:"+ ex.getMessage());
+        }
+
+        if(Objects.isNull(request.getOtp()) || !otpHistory.getCode().equals(request.getOtp()) || otpHistory.getExpiredTime().isBefore(LocalDateTime.now())){
+            throw new BusinessException(ResponseStatusEnum.BAD_REQUEST, "OTP Invalid");
+        }
+        try {
+            profile.setPhoneNumber(otpHistory.getData());
+            profileRepository.save(profile);
+        }catch (Exception ex){
+            throw new BusinessException("Can't save data to database: "+ ex.getMessage());
+        }
+    }
+
     private GetAccountNotInLabResponse convertToGetAccountNotInLab(Account account){
         return GetAccountNotInLabResponse.builder()
                 .accountId(account.getAccountId())
@@ -485,15 +575,23 @@ public class AccountServiceImpl implements AccountService {
         StringBuilder stringBuilder = new StringBuilder();
         Random random = new Random();
         int[] randomNumber;
+        boolean upper = false;
+        boolean lower =false;
+        boolean number = false;
         do {
-            randomNumber = random.ints(RECOMMEND_PASSWORD_LENGTH * 5L, 48, 122)
-                    .filter(x -> x > 97 && x < 122 || x > 65 && x < 90 || x > 48 && x < 57)
+            randomNumber = random.ints(8 * 5L, 48, 122)
+                    .filter(x -> x > 97 && x < 122 || x > 64 && x < 91 || x > 48 && x < 57)
                     .toArray();
-        } while (randomNumber.length < RECOMMEND_PASSWORD_LENGTH);
+            upper = Arrays.stream(randomNumber).anyMatch(x -> x > 48 && x < 57);
+            lower =Arrays.stream(randomNumber).anyMatch(x -> x > 64 && x < 91);
+            number = Arrays.stream(randomNumber).anyMatch(x ->  x > 97 && x < 122);
 
-        for (int i = 0; i < RECOMMEND_PASSWORD_LENGTH; i++) {
+        } while (randomNumber.length == 8 && upper && lower && number);
+
+        for (int i = 0; i < 8; i++) {
             stringBuilder.append((char) randomNumber[i]);
         }
+
         return stringBuilder.toString();
     }
 

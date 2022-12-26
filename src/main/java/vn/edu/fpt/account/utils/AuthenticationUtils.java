@@ -22,4 +22,19 @@ public class AuthenticationUtils {
         return role + ":" + permission;
     }
 
+    public static String validatePhoneNumber(String phoneNumber) {
+        if (phoneNumber == null) {
+            return null;
+        }
+        if (phoneNumber.matches("^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$")) {
+            if (phoneNumber.charAt(0) == '0') {
+                return phoneNumber.replaceFirst("0", "+84");
+            } else {
+                return "+84" + phoneNumber;
+            }
+        } else {
+            return null;
+        }
+
+    }
 }

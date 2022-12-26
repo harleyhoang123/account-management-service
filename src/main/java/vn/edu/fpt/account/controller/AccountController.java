@@ -61,6 +61,11 @@ public interface AccountController {
             @PathVariable String id,
             @RequestBody ChangeEmailRequest request);
 
+    @PostMapping("/{id}/phone-number")
+    ResponseEntity<GeneralResponse<Object>> sendVerifyPhoneNumber(@PathVariable(name = "id") String id, @RequestBody SendVerifyPhoneNumberRequest request);
+
+    @PostMapping("/{id}/phone-number/verify")
+    ResponseEntity<GeneralResponse<Object>> verifyPhoneNumber(@PathVariable(name = "id") String id, @RequestBody VerifyPhoneNumberRequest request);
 
     @PostMapping("/password/reset")
     ResponseEntity<GeneralResponse<Object>> resetPassword(@RequestBody ResetPasswordRequest request);
