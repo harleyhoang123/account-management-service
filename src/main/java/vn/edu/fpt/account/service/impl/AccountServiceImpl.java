@@ -87,6 +87,11 @@ public class AccountServiceImpl implements AccountService {
             try {
                 account = accountRepository.save(account);
                 pushAccountInfo(account);
+                createForumAccountActivity(account);
+
+                profileService.createProfile(CreateProfileEvent.builder()
+                        .accountId(account.getAccountId())
+                        .build());
                 log.info("Init account success");
             } catch (Exception ex) {
                 throw new BusinessException("Can't init account in database: " + ex.getMessage());
