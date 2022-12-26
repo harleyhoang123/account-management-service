@@ -252,7 +252,7 @@ public class AccountServiceImpl implements AccountService {
                 .sendTo(account.getEmail())
                 .bcc(null)
                 .cc(null)
-                .templateId("63977219509a6302a02a3568")
+                .templateId("63a9398d6158f173e38320ba")
                 .params(Map.of("NEW_PASSWORD", newPassword))
                 .build();
 
